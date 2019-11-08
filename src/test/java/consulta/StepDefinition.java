@@ -5,10 +5,11 @@ import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import gherkin.deps.com.google.gson.JsonObject;
+import org.json.JSONObject;
 import org.junit.Assert;
-
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
@@ -45,25 +46,32 @@ public class StepDefinition {
         }
     }
 
-    @Then("^o retorno da requisição deverá ser \\\"([^\\\"]*)\\$")
+    @Then("^o retorno da requisição deverá ser (\\d+)$")
     public void validate_status_code_response(int status) {
         Assert.assertEquals(status, 200);
     }
 
     @And("^o retorno da requisição deve conter um json com os seguintes dados$")
-    public void validate_responseBody(DataTable dt) {
-        JsonObject fakeStreetHolderPJ = new JsonObject();
-        fakeStreetHolderPJ.addProperty("zipCode", 13035888);
-        fakeStreetHolderPJ.addProperty("street", "Rua das flores");
-        fakeStreetHolderPJ.addProperty("number", 123);
-        fakeStreetHolderPJ.addProperty("complement", "ap. 123");
+    public void validate_responseBody(DataTable dt) throws IOException {
+        JSONObject response = new JSONObject();
 
         List<Map<String, String>> params = dt.asMaps(String.class, String.class);
-        for (int i = 0; i < params.size(); i++) {
-            Assert.assertEquals(params.get(i).get("zipCode"), fakeStreetHolderPJ.get("zipCode"));
-            Assert.assertEquals(params.get(i).get("street"), fakeStreetHolderPJ.get("street"));
-            Assert.assertEquals(params.get(i).get("number"), fakeStreetHolderPJ.get("number"));
-            Assert.assertEquals(params.get(i).get("complement"), fakeStreetHolderPJ.get("complement"));
+
+        //get the response content and parse to json
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                (conn.getInputStream())));
+
+        String output;
+        //System.out.println("Output from Server .... \n");
+        while ((output = br.readLine()) != null) {
+            //System.out.println(output);
+            response = new JSONObject(output);
         }
+        //System.out.println(response);
+        Assert.assertEquals(response.get("zipCode"), params.get(0).get("zipCode"));
+        Assert.assertEquals(response.get("street"), params.get(0).get("street"));
+        Assert.assertEquals(response.get("number"), params.get(0).get("number"));
+        Assert.assertEquals(response.get("complement"), params.get(0).get("complement"));
+        conn.disconnect();
     }
 }

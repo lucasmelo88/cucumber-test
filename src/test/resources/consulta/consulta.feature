@@ -6,7 +6,7 @@ Feature: Consultar endereço de correntista
       | 12123123077 | PJ          |
       | 32128485980 | PF          |
     And realiza sua consulta
-    Then o retorno da requisição deverá ser "200"
+    Then o retorno da requisição deverá ser 200
     And o retorno da requisição deve conter um json com os seguintes dados
       | zipCode  | street          | number | complement |
       | 13035888 | Rua das flores  | 123    | ap.55      |
